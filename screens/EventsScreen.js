@@ -1,12 +1,6 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-  Pressable,
-} from "react-native";
+import { ScrollView, View, Text, StyleSheet, ActivityIndicator, Pressable } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Papa from "papaparse";
 import { MaterialIcons } from "@expo/vector-icons";
 
@@ -45,56 +39,45 @@ export default function EventsScreen({ navigation }) {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#000" />
-      </View>
+      <SafeAreaView style={styles.center}>
+        <ActivityIndicator size="large" color="#0077ff" />
+      </SafeAreaView>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
-      {events.map((event, index) => (
-        <View key={index} style={styles.card}>
-          <Text style={styles.title}>{event.title || "Sem título"}</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.container}>
+        {events.map((event, index) => (
+          <View key={index} style={styles.card}>
+            <Text style={styles.title}>{event.title || "Sem título"}</Text>
 
-          {event.displayDate ? (
-            <Text style={styles.date}>📅 {event.displayDate}</Text>
-          ) : null}
+            {event.displayDate && <Text style={styles.date}>📅 {event.displayDate}</Text>}
+            {event.start && <Text style={styles.meta}>Início: {event.start}</Text>}
+            {event.end && <Text style={styles.meta}>Fim: {event.end}</Text>}
+            {event.description && <Text style={styles.desc}>{event.description}</Text>}
 
-          {event.start ? (
-            <Text style={styles.meta}>Início: {event.start}</Text>
-          ) : null}
-
-          {event.end ? (
-            <Text style={styles.meta}>Fim: {event.end}</Text>
-          ) : null}
-
-          {event.description ? (
-            <Text style={styles.desc}>{event.description}</Text>
-          ) : null}
-
-          {/* Botão Ver Detalhes */}
-          <Pressable
-            style={({ pressed }) => [
-              styles.button,
-              pressed && { opacity: 0.7 },
-            ]}
-            onPress={() => navigation.navigate("EventDetails", { event })}
-          >
-            <MaterialIcons name="arrow-forward" size={20} color="#fff" />
-            <Text style={styles.buttonText}>Ver Detalhes</Text>
-          </Pressable>
-        </View>
-      ))}
-    </ScrollView>
+            <Pressable
+              style={({ pressed }) => [styles.button, pressed && { opacity: 0.7 }]}
+              onPress={() => navigation.navigate("EventDetails", { event })}
+            >
+              <MaterialIcons name="arrow-forward" size={20} color="#fff" />
+              <Text style={styles.buttonText}>Ver Detalhes</Text>
+            </Pressable>
+          </View>
+        ))}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    padding: 16,
     backgroundColor: "#f9f9f9",
+  },
+  container: {
+    padding: 16,
   },
   card: {
     backgroundColor: "#fff",
@@ -132,12 +115,12 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     backgroundColor: "#0077ff",
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 8,
     marginTop: 12,
-    justifyContent: "center",
   },
   buttonText: {
     color: "#fff",
@@ -145,6 +128,9 @@ const styles = StyleSheet.create({
     marginLeft: 6,
     fontSize: 16,
   },
-  center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });
-

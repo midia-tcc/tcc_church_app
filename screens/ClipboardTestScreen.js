@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ToastAndroid, Platform, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ToastAndroid, Platform, Alert, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
 
 export default function ClipboardTestScreen() {
@@ -22,21 +23,47 @@ export default function ClipboardTestScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Teste Clipboard</Text>
-      <TouchableOpacity style={styles.button} onPress={copyText}>
-        <Text style={styles.buttonText}>Copiar Texto</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={readText}>
-        <Text style={styles.buttonText}>Ler Texto</Text>
-      </TouchableOpacity>
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>Teste Clipboard</Text>
+        <TouchableOpacity style={styles.button} onPress={copyText}>
+          <Text style={styles.buttonText}>Copiar Texto</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={readText}>
+          <Text style={styles.buttonText}>Ler Texto</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-  title: { fontSize: 22, fontWeight: '700', marginBottom: 20 },
-  button: { marginTop: 10, backgroundColor: '#4CAF50', padding: 12, borderRadius: 8 },
-  buttonText: { color: '#fff', fontWeight: '700' }
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  container: { 
+    flexGrow: 1,
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    padding: 20 
+  },
+  title: { 
+    fontSize: 22, 
+    fontWeight: '700', 
+    marginBottom: 20 
+  },
+  button: { 
+    marginTop: 10, 
+    backgroundColor: '#4CAF50', 
+    padding: 12, 
+    borderRadius: 8, 
+    width: 200,
+    alignItems: 'center'
+  },
+  buttonText: { 
+    color: '#fff', 
+    fontWeight: '700',
+    textAlign: 'center'
+  }
 });
