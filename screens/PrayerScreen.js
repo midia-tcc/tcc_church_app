@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Linking, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import config from '../config';
-import { COLORS } from '../theme';
+import { COLORS, APP_NAME } from '../theme';
 
 export default function PrayerScreen() {
   const [name, setName] = useState('');
   const [request, setRequest] = useState('');
+  const insets = useSafeAreaInsets();
 
   const sendPrayer = () => {
     if (!request.trim()) {
@@ -25,7 +26,7 @@ export default function PrayerScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
@@ -37,6 +38,7 @@ export default function PrayerScreen() {
             value={name}
             onChangeText={setName}
             placeholder="Seu nome"
+            placeholderTextColor="#aaa"
           />
 
           <Text style={styles.label}>Pedido de Oração</Text>
@@ -45,6 +47,7 @@ export default function PrayerScreen() {
             value={request}
             onChangeText={setRequest}
             placeholder="Escreva seu pedido"
+            placeholderTextColor="#aaa"
             multiline
           />
 
@@ -60,23 +63,24 @@ export default function PrayerScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.BG, // ✅ fundo preto do tema
   },
   container: {
     padding: 16,
   },
   label: {
     marginTop: 8,
-    color: '#333',
+    color: COLORS.PRIMARY, // ✅ usa cor principal do tema
     fontWeight: '700',
   },
   input: {
     marginTop: 6,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#555', // ajuste para contraste com fundo escuro
     borderRadius: 8,
     padding: 10,
-    backgroundColor: '#fff',
+    backgroundColor: '#222', // fundo escuro para inputs
+    color: '#fff', // texto branco
   },
   button: {
     marginTop: 16,

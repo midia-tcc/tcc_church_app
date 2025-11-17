@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { ScrollView, View, Text, StyleSheet, ActivityIndicator, Pressable } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Papa from "papaparse";
 import { MaterialIcons } from "@expo/vector-icons";
+import { COLORS, APP_NAME } from '../theme';
 
 export default function EventsScreen({ navigation }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const insets = useSafeAreaInsets();
 
   const CSV_URL =
     "https://docs.google.com/spreadsheets/d/1QCp0dvxLyhwWC5Xs2mlU5UmFQFi4ixD62EDc-2kIpdI/export?format=csv&gid=0";
@@ -39,14 +41,14 @@ export default function EventsScreen({ navigation }) {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.center}>
-        <ActivityIndicator size="large" color="#0077ff" />
+      <SafeAreaView style={[styles.center, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+        <ActivityIndicator size="large" color={COLORS.ACCENT} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <ScrollView contentContainerStyle={styles.container}>
         {events.map((event, index) => (
           <View key={index} style={styles.card}>
@@ -74,20 +76,20 @@ export default function EventsScreen({ navigation }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: COLORS.BG, // ✅ fundo preto do tema
   },
   container: {
     padding: 16,
   },
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: '#222', // fundo escuro para os cards
     padding: 16,
     borderRadius: 12,
     marginBottom: 14,
     borderLeftWidth: 6,
-    borderLeftColor: "#0077ff",
+    borderLeftColor: COLORS.ACCENT,
     shadowColor: "#000",
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 5,
     elevation: 3,
@@ -96,27 +98,28 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "700",
     marginBottom: 8,
+    color: COLORS.PRIMARY,
   },
   date: {
     fontSize: 16,
-    color: "#333",
+    color: COLORS.PRIMARY,
     marginBottom: 6,
   },
   meta: {
     fontSize: 14,
-    color: "#555",
+    color: '#aaa',
     marginBottom: 4,
   },
   desc: {
     marginTop: 8,
     fontSize: 15,
-    color: "#444",
+    color: '#ccc',
   },
   button: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#0077ff",
+    backgroundColor: COLORS.ACCENT,
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 8,

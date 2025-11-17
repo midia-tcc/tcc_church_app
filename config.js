@@ -3,7 +3,7 @@ export default {
   COLORS: {
     PRIMARY: "#000000",
     ACCENT: "#F57C00",
-    BG: "#FFFFFF"
+    BG: "#000000"
   },
   YOUTUBE_API_KEY: "YOUR_YOUTUBE_API_KEY_HERE",
   YOUTUBE_CHANNEL_ID: "@tempodacolheitachurch",

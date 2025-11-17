@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, Linking, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import axios from 'axios';
 import config from '../config';
-import { COLORS } from '../theme';
+import { COLORS, APP_NAME } from '../theme';
 
 
 export default function SermonsScreen() {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(false);
+  const insets = useSafeAreaInsets();
 
-  useEffect(() => {
-    fetchVideos();
-  }, []);
+  useEffect(() => { fetchVideos(); }, []);
 
   const fetchVideos = async () => {
     setLoading(true);
@@ -28,42 +27,35 @@ export default function SermonsScreen() {
         publishedAt: i.snippet.publishedAt
       }));
       setVideos(items);
-    } catch (e) {
-      console.warn('Erro ao carregar vídeos. Verifique a API key e o channelId.', e);
-    } finally {
-      setLoading(false);
-    }
+    } catch (e) { console.warn('Erro ao carregar vídeos.', e); }
+    finally { setLoading(false); }
   };
 
   const openVideo = (videoId) => {
-    const url = `https://www.youtube.com/watch?v=${videoId}`;
-    Linking.openURL(url);
+    Linking.openURL(`https://www.youtube.com/watch?v=${videoId}`);
   };
 
   if (loading) return (
-    <View style={styles.center}>
+    <SafeAreaView style={[styles.center, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <ActivityIndicator size="large" color={COLORS.ACCENT} />
-    </View>
-  );
-
-  const renderItem = ({ item }) => (
-    <TouchableOpacity style={styles.item} onPress={() => openVideo(item.id)} activeOpacity={0.7}>
-      <Image source={{ uri: item.thumbnail }} style={styles.thumb} />
-      <View style={styles.info}>
-        <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
-        <Text style={styles.date}>{new Date(item.publishedAt).toLocaleDateString()}</Text>
-      </View>
-    </TouchableOpacity>
+    </SafeAreaView>
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <FlatList
         data={videos}
         keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={{ padding: 16 }}
-        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+        contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom + 16 }}
+        renderItem={({ item }) => (
+          <TouchableOpacity style={styles.item} onPress={() => openVideo(item.id)}>
+            <Image source={{ uri: item.thumbnail }} style={styles.thumb} />
+            <View style={{ flex: 1, marginLeft: 10 }}>
+              <Text style={styles.title}>{item.title}</Text>
+              <Text style={styles.date}>{new Date(item.publishedAt).toLocaleDateString()}</Text>
+            </View>
+          </TouchableOpacity>
+        )}
       />
     </SafeAreaView>
   );
@@ -71,10 +63,9 @@ export default function SermonsScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: COLORS.BG },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  item: { flexDirection: 'row', backgroundColor: '#fff', borderRadius: 10, padding: 10, elevation: 2, shadowColor: '#000', shadowOpacity: 0.1, shadowOffset: { width: 0, height: 2 }, shadowRadius: 4 },
+  item: { flexDirection: 'row', padding: 10, borderBottomWidth: 1, borderBottomColor: '#eee' },
   thumb: { width: 120, height: 70, borderRadius: 6 },
-  info: { flex: 1, marginLeft: 10, justifyContent: 'center' },
-  title: { fontWeight: '700', color: COLORS.PRIMARY, fontSize: 16 },
-  date: { color: '#666', marginTop: 4, fontSize: 12 },
+  title: { fontWeight: '700', color: COLORS.PRIMARY },
+  date: { color: '#666', marginTop: 6, fontSize: 12 },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });
