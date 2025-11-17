@@ -1,91 +1,150 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-import * as Calendar from 'expo-calendar';
-import { COLORS } from '../theme';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  Pressable,
+} from "react-native";
+import Papa from "papaparse";
+import { MaterialIcons } from "@expo/vector-icons";
 
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQBWSFhyaxtN6vCCwM_NYsFHaW-5w-_p94rFKygBn0mEYAPKuFUGY8OHP3WZITujVDSgbspDPpKH-Ji/gviz/tq?tqx=out:json";
-
-export default function EventsScreen(){
+export default function EventsScreen({ navigation }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const CSV_URL =
+    "https://docs.google.com/spreadsheets/d/1QCp0dvxLyhwWC5Xs2mlU5UmFQFi4ixD62EDc-2kIpdI/export?format=csv&gid=0";
 
-  const fetchData = async () => {
+  async function fetchEvents() {
     try {
-      const res = await fetch(SHEET_URL);
-      const text = await res.text();
-      const json = JSON.parse(text.substr(47).slice(0, -2)); // remove prefixo/sufixo do Google
-      const rows = json.table.rows.map(r => ({
-        id: r.c[0]?.v?.toString() || Math.random().toString(),
-        title: r.c[1]?.v || "",
-        displayDate: r.c[2]?.v || "",
-        start: r.c[3]?.v || "",
-        end: r.c[4]?.v || "",
-        description: r.c[5]?.v || "",
-      }));
-      setEvents(rows);
-    } catch (e) {
-      console.error(e);
-      Alert.alert("Erro", "Não foi possível carregar os eventos.");
-    } finally {
+      const response = await fetch(CSV_URL);
+      const csv = await response.text();
+
+      Papa.parse(csv, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (result) => {
+          const rows = result.data.filter(
+            (row) => row.title || row.displayDate || row.start
+          );
+          setEvents(rows);
+          setLoading(false);
+        },
+      });
+    } catch (error) {
+      console.log("Error loading events:", error);
       setLoading(false);
     }
-  };
+  }
 
-  const addToCalendar = async (item) => {
-    try {
-      const { status } = await Calendar.requestCalendarPermissionsAsync();
-      if (status === 'granted') {
-        const calendars = await Calendar.getCalendarsAsync();
-        const defaultCal = calendars.find(c => c.allowsModifications) || calendars[0];
-        await Calendar.createEventAsync(defaultCal.id, {
-          title: item.title,
-          startDate: new Date(item.start),
-          endDate: new Date(item.end),
-          notes: item.description,
-          timeZone: 'UTC',
-        });
-        Alert.alert('Adicionado', 'Evento adicionado ao seu calendário.');
-      } else {
-        Alert.alert('Permissão negada', 'Permissão ao calendário foi negada.');
-      }
-    } catch (e) {
-      console.error(e);
-      Alert.alert('Erro', 'Não foi possível adicionar ao calendário.');
-    }
-  };
+  useEffect(() => {
+    fetchEvents();
+  }, []);
 
-  if (loading) return <ActivityIndicator style={{flex:1}} size="large" color={COLORS.ACCENT} />;
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#000" />
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={events}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.date}>{item.displayDate}</Text>
-            <Text style={styles.desc}>{item.description}</Text>
-            <TouchableOpacity style={styles.button} onPress={() => addToCalendar(item)}>
-              <Text style={styles.buttonText}>Adicionar ao calendário</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      />
-    </View>
+    <ScrollView style={styles.container}>
+      {events.map((event, index) => (
+        <View key={index} style={styles.card}>
+          <Text style={styles.title}>{event.title || "Sem título"}</Text>
+
+          {event.displayDate ? (
+            <Text style={styles.date}>📅 {event.displayDate}</Text>
+          ) : null}
+
+          {event.start ? (
+            <Text style={styles.meta}>Início: {event.start}</Text>
+          ) : null}
+
+          {event.end ? (
+            <Text style={styles.meta}>Fim: {event.end}</Text>
+          ) : null}
+
+          {event.description ? (
+            <Text style={styles.desc}>{event.description}</Text>
+          ) : null}
+
+          {/* Botão Ver Detalhes */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.button,
+              pressed && { opacity: 0.7 },
+            ]}
+            onPress={() => navigation.navigate("EventDetails", { event })}
+          >
+            <MaterialIcons name="arrow-forward" size={20} color="#fff" />
+            <Text style={styles.buttonText}>Ver Detalhes</Text>
+          </Pressable>
+        </View>
+      ))}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex:1, padding:12, backgroundColor:'#fff' },
-  card: { backgroundColor:'#fafafa', padding:12, marginBottom:10, borderRadius:8 },
-  title: { fontWeight:'700', fontSize:16, color:COLORS.PRIMARY },
-  date: { color:'#666', marginTop:6 },
-  desc: { marginTop:8, color:'#444' },
-  button: { marginTop:8, backgroundColor:COLORS.ACCENT, padding:8, borderRadius:6, alignSelf:'flex-start' },
-  buttonText: { color:'#fff', fontWeight:'700' }
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: "#f9f9f9",
+  },
+  card: {
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 14,
+    borderLeftWidth: 6,
+    borderLeftColor: "#0077ff",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  date: {
+    fontSize: 16,
+    color: "#333",
+    marginBottom: 6,
+  },
+  meta: {
+    fontSize: 14,
+    color: "#555",
+    marginBottom: 4,
+  },
+  desc: {
+    marginTop: 8,
+    fontSize: 15,
+    color: "#444",
+  },
+  button: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#0077ff",
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    marginTop: 12,
+    justifyContent: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    marginLeft: 6,
+    fontSize: 16,
+  },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
 });
+
