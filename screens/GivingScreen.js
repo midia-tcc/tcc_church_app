@@ -1,67 +1,52 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ToastAndroid, Platform, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ToastAndroid, Platform, Alert, ScrollView } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS } from '../theme';
 import * as Clipboard from 'expo-clipboard';
 
 const BANK_INFO = {
-    bank: "Placeholder Bank",
-    accountName: "TCC Church",
-    accountNumber: "00012345",
-    sortCode: "00-00-00",
-    IBAN: "GB00TCC00000000000000",
-    PIX: "pix_key_placeholder"
+  bank: "Placeholder Bank",
+  accountName: "TCC Church",
+  accountNumber: "00012345",
+  sortCode: "00-00-00",
+  IBAN: "GB00TCC00000000000000",
+  PIX: "pix_key_placeholder"
 };
 
 export default function GivingScreen() {
+  const insets = useSafeAreaInsets();
 
-    const copy = async () => {
-        const text = Object.entries(BANK_INFO)
-            .map(([key, value]) => `${key}: ${value}`)
-            .join('\n');
+  const copy = async () => {
+    const text = Object.entries(BANK_INFO).map(([k, v]) => `${k}: ${v}`).join('\n');
+    await Clipboard.setStringAsync(text);
+    if (Platform.OS === 'android') {
+      ToastAndroid.show('Dados copiados', ToastAndroid.SHORT);
+    } else {
+      Alert.alert('Copiado', 'Dados bancários copiados para área de transferência.');
+    }
+  };
 
-        await Clipboard.setStringAsync(text);
+  return (
+    <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>Generosidade</Text>
+        {Object.entries(BANK_INFO).map(([k, v]) => (
+          <Text key={k} style={styles.label}>{`${k}: ${v}`}</Text>
+        ))}
 
-        if (Platform.OS === 'android') {
-            ToastAndroid.show('Dados copiados', ToastAndroid.SHORT);
-        } else {
-            Alert.alert('Copiado', 'Dados bancários copiados para área de transferência.');
-        }
-    };
-
-    const testClipboard = async () => {
-        await Clipboard.setStringAsync("Teste Clipboard!");
-        const copiedText = await Clipboard.getStringAsync();
-
-        if (Platform.OS === "android") {
-            ToastAndroid.show(`Clipboard: ${copiedText}`, ToastAndroid.SHORT);
-        } else {
-            Alert.alert("Clipboard", copiedText);
-        }
-    };
-
-    return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Generosidade</Text>
-
-            {Object.entries(BANK_INFO).map(([key, value]) => (
-                <Text key={key} style={styles.label}>{`${key}: ${value}`}</Text>
-            ))}
-
-            <TouchableOpacity style={styles.button} onPress={copy}>
-                <Text style={styles.buttonText}>Copiar Dados</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={[styles.button, { backgroundColor: '#555' }]} onPress={testClipboard}>
-                <Text style={styles.buttonText}>Testar Clipboard</Text>
-            </TouchableOpacity>
-        </View>
-    );
+        <TouchableOpacity style={styles.button} onPress={copy}>
+          <Text style={styles.buttonText}>Copiar Dados</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-    title: { fontSize: 20, fontWeight: '700', color: COLORS.PRIMARY, marginBottom: 16 },
-    label: { marginTop: 8, color: '#333' },
-    button: { marginTop: 16, backgroundColor: COLORS.ACCENT, padding: 12, borderRadius: 8, alignItems: 'center' },
-    buttonText: { color: '#fff', fontWeight: '700' }
+  safeArea: { flex: 1, backgroundColor: '#fff' },
+  container: { padding: 20 },
+  title: { fontSize: 20, fontWeight: '700', color: COLORS.PRIMARY, marginBottom: 16 },
+  label: { marginTop: 8, color: '#333' },
+  button: { marginTop: 16, backgroundColor: COLORS.ACCENT, padding: 12, borderRadius: 8, alignItems: 'center' },
+  buttonText: { color: '#fff', fontWeight: '700' },
 });
